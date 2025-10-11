@@ -1,5 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import * as tools from "./tools.js";
+import { z } from "zod";
 
 export interface StdioServerHandle {
   server: McpServer;
@@ -7,19 +9,32 @@ export interface StdioServerHandle {
 }
 
 function buildStdioServer(): McpServer {
-      const server = new McpServer({
+  const server = new McpServer({
     name: "mcp-analytics-server",
     version: "1.0.0",
     capabilities: {
       resources: {},
       tools: {},
-    }})
+    },
+  });
 
-    return server;
+  server.tool(
+    "getInventory",
+    {},
+    { title: "Get product inventory" },
+    async () => tools.getInventory()
+  );
+
+  server.tool(
+    "checkStock",
+    { productId: z.string() },
+    { title: "Get stock for a specified product" },
+    async (args) => tools.checkStock(args.productId)
+  );
+  return server;
 }
 
-export async function startStdioServer(
-): Promise<StdioServerHandle> {
+export async function startStdioServer(): Promise<StdioServerHandle> {
   const server = buildStdioServer();
   const transport = new StdioServerTransport();
   await server.connect(transport);

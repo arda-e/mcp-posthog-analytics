@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "mcp-analytics-server": {
+      "command": "/Users/YOUR_USER_NAME/.nvm/versions/node/YOUR_NODE_VERSION/bin/node",
+      "args": ["YOUR_PATH_TO_PROJECT/build/index.js"]
+    }
+  }
+}

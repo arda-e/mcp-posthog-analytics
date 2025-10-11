@@ -1,6 +1,5 @@
-import dotenv from "dotenv";
+import "dotenv/config";
 import { startStdioServer, stopStdioServer } from "./server.js";
-dotenv.config();
 
 const apiKey = process.env.POSTHOG_API_KEY;
 
@@ -8,8 +7,6 @@ async function main() {
   if(!apiKey) {
     console.error("[SERVER] POSTHOG_API_KEY is not set, continue without analytics");
   }
-
-  console.log("[TEST] POSTHOG_API_KEY is set: ", apiKey);
 
   try {
     const handle = await startStdioServer();
