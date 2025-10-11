@@ -1,0 +1,34 @@
+{
+  "name": "mcp-server-posthog-analytics",
+  "version": "1.0.0",
+  "description": "MCP server with PostHog analytics integration tutorial",
+  "type": "module",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node build/index.js",
+    "dev": "tsc && node build/index.js",
+    "clean": "rm -rf build"
+  },
+  "keywords": [
+    "mcp",
+    "server",
+    "posthog",
+    "analytics",
+    "llm",
+    "tutorial"
+  ],
+  "author": "Arda Eren",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arda-e/mcp-server-analytics.git"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.20.0",
+    "dotenv": "^17.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.1"
+  }
+}
