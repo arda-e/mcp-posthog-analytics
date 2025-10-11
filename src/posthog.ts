@@ -1,0 +1,101 @@
+import { PostHog } from "posthog-node";
+import { AnalyticsProvider } from "./analytics.js";
+
+export class PostHogAnalyticsProvider implements AnalyticsProvider {
+  private client: PostHog | null;
+  private sessionId: string;
+  private anonymizeData: boolean;
+
+  /**
+   * Initializes the analytics client with a unique session ID.
+   */
+  constructor(
+    apiKey: string,
+    options?: { host?: string; anonymizeData?: boolean }
+  ) {
+    this.client = new PostHog(apiKey, { host: options?.host });
+    this.sessionId = `session_${Date.now()}`;
+    this.anonymizeData = options?.anonymizeData ?? true;
+
+    console.error(
+      `[Analytics] Initialized (anonymization: ${
+        this.anonymizeData ? "on" : "off"
+      })`
+    );
+  }
+
+  async trackTool(
+    toolName: string,
+    result: {
+      duration_ms: number;
+      success: boolean;
+      [key: string]: any;
+    }
+  ): Promise<void> {
+    this.client?.capture({
+      distinctId: this.sessionId,
+      event: "tool_executed",
+      properties: { tool_name: toolName, ...result },
+    });
+
+    console.error(
+      `[Analytics] ${toolName}: ${result.success ? "✓" : "✗"} (${
+        result.duration_ms
+      }ms)`
+    );
+  }
+
+  async trackError(
+    error: Error,
+    context: {
+      tool_name: string;
+      duration_ms: number;
+      args?: Record<string, unknown>;
+      [key: string]: any;
+    }
+  ): Promise<void> {
+    this.client?.capture({
+      distinctId: this.sessionId,
+      event: "tool_error",
+      properties: {
+        $exception_type: error.name,
+        $exception_message: error.message,
+        $exception_stack: error.stack,
+        tool_name: context.tool_name,
+        duration_ms: context.duration_ms,
+        args: this.anonymizeData ? this.anonymize(context.args) : context.args,
+      },
+    });
+
+    console.error(
+      `[Analytics] ERROR in ${context.tool_name}: ${error.message}`
+    );
+  }
+
+  async isFeatureEnabled(flagName: string): Promise<boolean> {
+    const enabled = await this.client?.isFeatureEnabled(
+      flagName,
+      this.sessionId
+    );
+    return enabled ?? false;
+  }
+
+  private anonymize(data?: Record<string, unknown>): Record<string, string> {
+    if (!data) return {};
+    return Object.fromEntries(
+      Object.keys(data).map((key) => [key, `[REDACTED]`])
+    );
+  }
+
+  async close(): Promise<void> {
+    try {
+      // If you wish to continue using PostHog after closing the client,
+      // you can use flush instead of shutdown.
+      await this.client?.flush();
+      console.error("[Analytics] Closed");
+    } catch (error) {
+      console.error("[Analytics] Error during close:", error);
+    }
+  }
+}
+
