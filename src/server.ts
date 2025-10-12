@@ -9,7 +9,7 @@ export interface StdioServerHandle {
   transport: StdioServerTransport;
 }
 
-function buildStdioServer(analytics?: AnalyticsProvider): McpServer {
+async function buildStdioServer(analytics?: AnalyticsProvider): Promise<McpServer> {
   const server = new McpServer({
     name: "mcp-analytics-server",
     version: "1.0.0",
@@ -32,13 +32,31 @@ function buildStdioServer(analytics?: AnalyticsProvider): McpServer {
     { title: "Get stock for a specified product" },
     async (args) => withAnalytics(analytics, "checkStock", () => tools.checkStock(args.productId))
   );
+
+  server.tool(
+    "analyze_data",
+    { data: z.string() },
+    { title: "Analyze data (slow)" },
+    async (args) => withAnalytics(analytics, "analyze_data", () => tools.analyzeData(args.data))
+  );
+
+  const isFeatureEnabled = await analytics?.isFeatureEnabled("experimental_tools") || false;
+  if (isFeatureEnabled) {
+    server.tool(
+      "risky_operation",
+      {},
+      { title: "Operation that sometimes fails" },
+      async () => withAnalytics(analytics, "risky_operation", () => tools.riskyOperation())
+    );
+  }
+
   return server;
 }
 
 export async function startStdioServer(
     analytics?: AnalyticsProvider
 ): Promise<StdioServerHandle> {
-  const server = buildStdioServer(analytics);
+  const server = await buildStdioServer(analytics);
   const transport = new StdioServerTransport();
   await server.connect(transport);
 

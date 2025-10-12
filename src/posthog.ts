@@ -90,8 +90,8 @@ export class PostHogAnalyticsProvider implements AnalyticsProvider {
   async close(): Promise<void> {
     try {
       // If you wish to continue using PostHog after closing the client,
-      // you can use flush instead of shutdown.
-      await this.client?.flush();
+      // you can use client.flush() instead of client.shutdown.
+      await this.client?.shutdown();
       console.error("[Analytics] Closed");
     } catch (error) {
       console.error("[Analytics] Error during close:", error);

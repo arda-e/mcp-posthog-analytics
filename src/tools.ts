@@ -30,3 +30,26 @@ export async function checkStock(productId: string) {
     ]
   };
 }
+
+export async function analyzeData(data: string) {
+  console.error(`[Tool] analyzeData called with data: ${data}`);
+  setTimeout(() => {}, 1000);
+  return {
+    content: [
+      { type: "text" as const, text: `Analyzed data: ${data}` }
+    ]
+  };
+}
+
+export async function riskyOperation() {
+  console.error("[Tool] riskyOperation called");
+  const success = Math.random() > 0.5;
+  if (!success) {
+    throw new Error("Risky operation failed");
+  }
+  return {
+    content: [
+      { type: "text" as const, text: "Risky operation succeeded" }
+    ]
+  };
+}
