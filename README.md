@@ -67,7 +67,7 @@ When Claude launches your server, stderr output goes to Claude's logs:
 tail -f ~/Library/Logs/Claude/mcp-server-*.log
 ```
 
-## **Remember:** After code changes, rebuild (`npm run build`) and restart Claude Desktop completely (Cmd+Q and reopen).
+#### **Remember:** After code changes, rebuild (`npm run build`) and restart Claude Desktop completely (Cmd+Q and reopen).
 
 ## Getting Started
 
@@ -1191,8 +1191,6 @@ await analytics?.trackTool("fetchOrders", {
 
 **Environment-specific configuration:**
 
-typescript
-
 ```typescript
 const analytics = apiKey && process.env.NODE_ENV === 'production'
   ? new PostHogAnalyticsProvider(apiKey, { anonymizeData: true })
@@ -1203,8 +1201,6 @@ const analytics = apiKey && process.env.NODE_ENV === 'production'
 
 For multi-instance deployments, use hostname-based session IDs:
 
-typescript
-
 ```typescript
 import { hostname } from 'os';
 
@@ -1212,8 +1208,6 @@ this.sessionId = `${hostname()}-${process.pid}`;
 ```
 
 **Structured logging:**
-
-typescript
 
 ```typescript
 console.error(JSON.stringify({
@@ -1301,7 +1295,7 @@ Common mistake: trailing commas in JSON
     "mcp-analytics-server": {
       "command": "/path/to/node",
       "args": ["/path/to/project/build/index.js"]
-      // ❌ Don't add comma here (last item)
+      // Don't add comma here (last item)
     }
   }
 }
@@ -1457,8 +1451,6 @@ if (flags.experimental) {
 
 **Check logs for timeout errors:**
 
-bash
-
 ```bash
 tail -f ~/Library/Logs/Claude/mcp-server-*.log | grep -i timeout
 ```
@@ -1512,6 +1504,4 @@ If none of the above helps:
 
 **Check PostHog Community:**
 
-The [PostHog Community Forum](https://posthog.com/questions) has answers to common integration questions. &lt;/artifact&gt;
-
-I've created the updated tutorial! Here are the key changes:
+The [PostHog Community Forum](https://posthog.com/questions) has answers to common integration questions.
