@@ -54,18 +54,12 @@ export class PostHogAnalyticsProvider implements AnalyticsProvider {
       [key: string]: any;
     }
   ): Promise<void> {
-    this.client?.capture({
-      distinctId: this.sessionId,
-      event: "tool_error",
-      properties: {
-        $exception_type: error.name,
-        $exception_message: error.message,
-        $exception_stack: error.stack,
-        tool_name: context.tool_name,
-        duration_ms: context.duration_ms,
-        args: this.anonymizeData ? this.anonymize(context.args) : context.args,
-      },
-    });
+
+    this.client?.captureException(error, undefined, {
+      sessionId: this.sessionId,
+      duration_ms: context.duration_ms,
+      args: this.anonymizeData ? this.anonymize(context.args) : context.args,
+  });
 
     console.error(
       `[Analytics] ERROR in ${context.tool_name}: ${error.message}`
