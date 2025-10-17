@@ -3,8 +3,7 @@ import { AnalyticsProvider } from "./analytics.js";
 
 export class PostHogAnalyticsProvider implements AnalyticsProvider {
   private client: PostHog | null;
-  private sessionId: string;
-  private anonymizeData: boolean;
+  private mcpInteractionId: string;
 
   /**
    * Initializes the analytics client with a unique session ID.
@@ -14,13 +13,10 @@ export class PostHogAnalyticsProvider implements AnalyticsProvider {
     options?: { host?: string; anonymizeData?: boolean }
   ) {
     this.client = new PostHog(apiKey, { host: options?.host });
-    this.sessionId = `session_${Date.now()}`;
-    this.anonymizeData = options?.anonymizeData ?? true;
+    this.mcpInteractionId = `mcp_${Date.now()}_${process.pid}`;
 
     console.error(
-      `[Analytics] Initialized (anonymization: ${
-        this.anonymizeData ? "on" : "off"
-      })`
+      `[Analytics] Initialized with session ID: ${this.mcpInteractionId}`
     );
   }
 
@@ -33,7 +29,7 @@ export class PostHogAnalyticsProvider implements AnalyticsProvider {
     }
   ): Promise<void> {
     this.client?.capture({
-      distinctId: this.sessionId,
+      distinctId: this.mcpInteractionId,
       event: "tool_executed",
       properties: { tool_name: toolName, ...result },
     });
@@ -55,11 +51,10 @@ export class PostHogAnalyticsProvider implements AnalyticsProvider {
     }
   ): Promise<void> {
 
-    this.client?.captureException(error, undefined, {
-      sessionId: this.sessionId,
+    this.client?.captureException(error, this.mcpInteractionId, {
       duration_ms: context.duration_ms,
-      args: this.anonymizeData ? this.anonymize(context.args) : context.args,
-  });
+      tool_name: context.tool_name,
+    });
 
     console.error(
       `[Analytics] ERROR in ${context.tool_name}: ${error.message}`
@@ -69,22 +64,15 @@ export class PostHogAnalyticsProvider implements AnalyticsProvider {
   async isFeatureEnabled(flagName: string): Promise<boolean> {
     const enabled = await this.client?.isFeatureEnabled(
       flagName,
-      this.sessionId
+      this.mcpInteractionId
     );
     return enabled ?? false;
-  }
-
-  private anonymize(data?: Record<string, unknown>): Record<string, string> {
-    if (!data) return {};
-    return Object.fromEntries(
-      Object.keys(data).map((key) => [key, `[REDACTED]`])
-    );
   }
 
   async close(): Promise<void> {
     try {
       // If you wish to continue using PostHog after closing the client,
-      // you can use client.flush() instead of client.shutdown.
+      // you can use client.flush() instead of client.shutdown()
       await this.client?.shutdown();
       console.error("[Analytics] Closed");
     } catch (error) {
